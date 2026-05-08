@@ -1,17 +1,37 @@
 'use client';
 
-// app/dashboard/page.tsx
-import { useState, useCallback, useRef } from 'react';
+// Enhanced Dashboard Page - AI-Powered Multi-Platform Content Distribution System
+import { useState, useCallback, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Upload, Sparkles, Send, RefreshCw, Youtube,
-  ToggleLeft, ToggleRight, CheckCircle2, XCircle,
-  Loader2, Clock, Hash, FileVideo, Image as ImageIcon,
-  AlignLeft, ChevronRight, ExternalLink
+  CheckCircle2, XCircle, Loader2, Clock, Hash,
+  FileVideo, Image as ImageIcon, ExternalLink,
+  LayoutDashboard, PenTool, Image, Calendar,
+  BarChart3, Zap, Link2, Users, Settings,
+  TrendingUp, Briefcase, Bell, Command,
+  ChevronDown, ChevronUp, X, MoreHorizontal,
+  Plus, Heart, MessageCircle, Share2,
+  Wand2, Copy, Check, AlertCircle,
+  TrendingUp as TrendIcon,
+  Flame,
 } from 'lucide-react';
-import type { Platform, CaptionVariants, MediaType } from '@/types';
+import type { Platform, CaptionVariants, MediaType, CalendarEvent, ConnectedAccount, Notification, CaptionTone } from '@/types';
 import { useUpload } from '@/hooks/useUpload';
+import { useNavStore, useCommandPaletteStore, useNotificationStore, useCaptionStore, useUIStore, useAccountStore } from '@/lib/store';
 
-// ─── Types ─────────────────────────────────────────────────────
+// Import enhanced components
+import { CommandPalette } from '@/components/CommandPalette';
+import { NotificationCenter } from '@/components/NotificationCenter';
+import { SidebarNav } from '@/components/SidebarNav';
+import { AICaptionStudio } from '@/components/AICaptionStudio';
+import { AIRepurposingEngine } from '@/components/AIRepurposingEngine';
+import { ContentCalendar } from '@/components/ContentCalendar';
+import { AnalyticsDashboard } from '@/components/AnalyticsDashboard';
+import { AccountManager } from '@/components/AccountManager';
+import { TikTokPreview, LinkedInPreview, YouTubeShortsPreview, InstagramPreview, TwitterPreview } from '@/components/previews';
+
+// ─── Types & Constants ─────────────────────────────────────────
 type PlatformState = {
   enabled: boolean;
   status: 'idle' | 'queued' | 'processing' | 'published' | 'failed';
@@ -25,6 +45,8 @@ const PLATFORM_COLORS: Record<Platform, string> = {
   tiktok: '#ff0050',
   linkedin: '#0077b5',
   facebook: '#1877f2',
+  instagram: '#e4405f',
+  twitter: '#1da1f2',
 };
 
 const PLATFORM_LABELS: Record<Platform, string> = {
@@ -32,9 +54,11 @@ const PLATFORM_LABELS: Record<Platform, string> = {
   tiktok: 'TikTok',
   linkedin: 'LinkedIn',
   facebook: 'Facebook',
+  instagram: 'Instagram',
+  twitter: 'X/Twitter',
 };
 
-const PLATFORMS: Platform[] = ['youtube', 'tiktok', 'linkedin', 'facebook'];
+const PLATFORMS: Platform[] = ['youtube', 'tiktok', 'linkedin', 'facebook', 'instagram', 'twitter'];
 
 // ─── Sub-components ────────────────────────────────────────────
 function StatusBadge({ status }: { status: PlatformState['status'] }) {
@@ -126,6 +150,8 @@ export default function DashboardPage() {
     tiktok: { enabled: true, status: 'idle', progress: 0, meta: 'Ready to publish' },
     linkedin: { enabled: true, status: 'idle', progress: 0, meta: 'Ready to publish' },
     facebook: { enabled: false, status: 'idle', progress: 0, meta: 'Not connected' },
+    instagram: { enabled: false, status: 'idle', progress: 0, meta: 'Not connected' },
+    twitter: { enabled: true, status: 'idle', progress: 0, meta: 'Ready to publish' },
   });
   const [publishing, setPublishing] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -210,45 +236,86 @@ export default function DashboardPage() {
     await publishPlatform(platform);
   }
 
-  const PLATFORM_LIST: Platform[] = ['youtube', 'tiktok', 'linkedin', 'facebook'];
+  const PLATFORM_LIST: Platform[] = ['youtube', 'tiktok', 'linkedin', 'facebook', 'instagram', 'twitter'];
+  
+  // Store hooks for enhanced functionality
+  const { activeSection, sidebarCollapsed, setActiveSection } = useNavStore();
+  const { notifications, unreadCount, addNotification } = useNotificationStore();
+  const { modals, openModal, closeModal } = useUIStore();
+  const { accounts } = useAccountStore();
+
+  // Fetch notifications from API
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        const response = await fetch('/api/notifications');
+        if (!response.ok) throw new Error('Failed to fetch notifications');
+        const data = await response.json();
+        // Notifications will be populated via the store
+      } catch (error) {
+        // Silent fail - notifications are not critical
+      }
+    };
+
+    fetchNotifications();
+  }, []);
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden" style={{ background: 'var(--bg)' }}>
-      {/* Topbar */}
-      <header className="flex items-center justify-between px-5 h-[52px] border-b flex-shrink-0"
-        style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
-        <div className="flex items-center gap-3">
-          <div className="w-[26px] h-[26px] rounded-[6px] flex items-center justify-center"
-            style={{ background: 'linear-gradient(135deg, var(--accent), var(--accent2))' }}>
-            <svg width="14" height="14" fill="none" viewBox="0 0 24 24">
-              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
-                stroke="#040d0a" strokeWidth="2" strokeLinecap="round" />
-            </svg>
+    <div className="flex h-screen overflow-hidden" style={{ background: 'var(--bg)' }}>
+      {/* Global Components */}
+      <CommandPalette />
+      
+      {/* Sidebar Navigation */}
+      <SidebarNav className="flex-shrink-0 hidden lg:flex" />
+
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Enhanced Topbar */}
+        <header className="flex items-center justify-between px-5 h-[52px] border-b flex-shrink-0"
+          style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
+          <div className="flex items-center gap-3">
+            <div className="w-[26px] h-[26px] rounded-[6px] flex items-center justify-center"
+              style={{ background: 'linear-gradient(135deg, var(--accent), var(--accent2))' }}>
+              <svg width="14" height="14" fill="none" viewBox="0 0 24 24">
+                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
+                  stroke="#040d0a" strokeWidth="2" strokeLinecap="round" />
+              </svg>
+            </div>
+            <span className="font-display font-bold text-[15px] tracking-tight">Distro</span>
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded border"
+              style={{ color: 'var(--accent)', background: 'rgba(110,231,183,0.1)', borderColor: 'rgba(110,231,183,0.2)' }}>
+              v3.0 Pro
+            </span>
           </div>
-          <span className="font-display font-bold text-[15px] tracking-tight">Distro</span>
-          <span className="text-[10px] font-mono px-2 py-0.5 rounded border"
-            style={{ color: 'var(--accent)', background: 'rgba(110,231,183,0.1)', borderColor: 'rgba(110,231,183,0.2)' }}>
-            v2.4.1
-          </span>
-        </div>
 
-        <div className="flex items-center gap-2">
-          <div className="w-[7px] h-[7px] rounded-full animate-pulse" style={{ background: 'var(--success)' }} />
-          <button
-            onClick={publishAll}
-            disabled={publishing}
-            className="flex items-center gap-2 px-4 py-1.5 rounded-lg text-[13px] font-medium transition-all disabled:opacity-40"
-            style={{ background: 'var(--accent)', color: '#040d0a' }}>
-            {publishing ? <Loader2 size={13} className="animate-spin" /> : <Send size={13} />}
-            {publishing ? 'Publishing...' : 'Publish All'}
-          </button>
-        </div>
-      </header>
+          <div className="flex items-center gap-3">
+            {/* Notification Center */}
+            <NotificationCenter />
+            
+            {/* Keyboard shortcut hint */}
+            <div className="hidden md:flex items-center gap-1.5 text-[11px] px-2 py-1 rounded border mr-2"
+              style={{ borderColor: 'var(--border)', color: 'var(--text3)' }}>
+              <span>Press</span>
+              <kbd className="px-1.5 py-0.5 rounded text-[10px]" style={{ background: 'var(--bg2)' }}>⌘K</kbd>
+              <span>for commands</span>
+            </div>
+            
+            <div className="w-[7px] h-[7px] rounded-full animate-pulse" style={{ background: 'var(--success)' }} />
+            <button
+              onClick={publishAll}
+              disabled={publishing}
+              className="flex items-center gap-2 px-4 py-1.5 rounded-lg text-[13px] font-medium transition-all disabled:opacity-40 hover:shadow-lg hover:shadow-[var(--accent-glow)]"
+              style={{ background: 'var(--accent)', color: '#040d0a' }}>
+              {publishing ? <Loader2 size={13} className="animate-spin" /> : <Send size={13} />}
+              {publishing ? 'Publishing...' : 'Publish All'}
+            </button>
+          </div>
+        </header>
 
-      {/* Body */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* Main content */}
-        <main className="flex-1 overflow-y-auto p-5 flex flex-col gap-4">
+        {/* Dynamic Content Based on Active Section */}
+        <div className="flex-1 overflow-hidden flex">
+          {/* Main Scrollable Content */}
+          <main className="flex-1 overflow-y-auto p-5">
           {/* Row 1: Upload + Caption */}
           <div className="grid grid-cols-2 gap-4">
             {/* Upload */}
@@ -399,59 +466,75 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Platform Previews */}
+          {/* Enhanced Multi-Platform Previews */}
           <div className="rounded-xl border overflow-hidden" style={{ background: 'var(--bg1)', borderColor: 'var(--border)' }}>
             <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: 'var(--border)' }}>
               <span className="font-display font-semibold text-[13px]">Multi-Platform Preview</span>
-              <span className="text-[11px] font-mono" style={{ color: 'var(--text3)' }}>Real-time render</span>
+              <span className="text-[11px] font-mono" style={{ color: 'var(--text3)' }}>Real-time platform UI</span>
             </div>
-            <div className="p-4 grid grid-cols-3 gap-3">
-              {(['youtube', 'tiktok', 'linkedin'] as Platform[]).map(p => (
-                <div key={p} className="rounded-xl border overflow-hidden transition-all hover:border-[var(--border2)]"
-                  style={{ borderColor: 'var(--border)' }}>
-                  <div className="px-3 py-2 flex items-center justify-between"
-                    style={{ background: `${PLATFORM_COLORS[p]}10` }}>
-                    <div className="flex items-center gap-2 text-[11px] font-display font-semibold">
-                      <div className="w-1.5 h-1.5 rounded-full" style={{ background: PLATFORM_COLORS[p] }} />
-                      {PLATFORM_LABELS[p]}
-                    </div>
-                    <button
-                      onClick={() => updatePlatform(p, { enabled: !platforms[p].enabled })}
-                      className="w-8 h-4 rounded-full relative transition-all"
-                      style={{ background: platforms[p].enabled ? 'var(--accent)' : 'var(--bg3)' }}>
-                      <div className="absolute top-0.5 h-3 w-3 rounded-full bg-white transition-all"
-                        style={{ left: platforms[p].enabled ? '18px' : '2px' }} />
-                    </button>
-                  </div>
-                  <div className={`p-3 transition-opacity ${platforms[p].enabled ? '' : 'opacity-30 pointer-events-none'}`}>
-                    <div className="rounded-lg p-2" style={{ background: 'var(--bg2)', minHeight: 80 }}>
-                      {p !== 'linkedin' && (
-                        <div className="flex items-center justify-center rounded mb-2 text-2xl"
-                          style={{ background: 'var(--bg3)', height: 64 }}>
-                          {p === 'youtube' ? '▶' : '♪'}
-                        </div>
-                      )}
-                      {p === 'linkedin' && (
-                        <div className="flex items-center gap-2 mb-2">
-                          <div className="w-6 h-6 rounded-full" style={{ background: 'linear-gradient(135deg, var(--accent2), var(--accent3))' }} />
-                          <div>
-                            <div className="text-[10px] font-semibold">Your Name</div>
-                            <div className="text-[9px]" style={{ color: 'var(--text3)' }}>Founder · SaaS</div>
-                          </div>
-                        </div>
-                      )}
-                      <p className="text-[10px] leading-relaxed" style={{ color: 'var(--text2)' }}>
-                        {caption.slice(0, 80)}{caption.length > 80 ? '...' : ''}
-                      </p>
-                      <p className="text-[9px] mt-1 font-mono" style={{ color: 'var(--text3)' }}>
-                        {p === 'youtube' ? '#analytics #nextjs · 12.4K views'
-                          : p === 'tiktok' ? '#devtok #buildinpublic · ♡ 8.2K'
-                          : '#BuildInPublic · 📊 623 impressions'}
-                      </p>
-                    </div>
-                  </div>
+            <div className="p-4 grid grid-cols-3 gap-4">
+              {/* TikTok Preview */}
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-medium" style={{ color: 'var(--text2)' }}>TikTok</span>
+                  <button
+                    onClick={() => updatePlatform('tiktok', { enabled: !platforms.tiktok.enabled })}
+                    className="w-8 h-4 rounded-full relative transition-all"
+                    style={{ background: platforms.tiktok.enabled ? 'var(--accent)' : 'var(--bg3)' }}>
+                    <div className="absolute top-0.5 h-3 w-3 rounded-full bg-white transition-all"
+                      style={{ left: platforms.tiktok.enabled ? '18px' : '2px' }} />
+                  </button>
                 </div>
-              ))}
+                <div className={`transition-opacity ${platforms.tiktok.enabled ? '' : 'opacity-40'}`}>
+                  <TikTokPreview
+                    caption={caption}
+                    hashtags={['buildinpublic', 'saas', 'startup']}
+                    isEnabled={platforms.tiktok.enabled}
+                  />
+                </div>
+              </div>
+
+              {/* LinkedIn Preview */}
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-medium" style={{ color: 'var(--text2)' }}>LinkedIn</span>
+                  <button
+                    onClick={() => updatePlatform('linkedin', { enabled: !platforms.linkedin.enabled })}
+                    className="w-8 h-4 rounded-full relative transition-all"
+                    style={{ background: platforms.linkedin.enabled ? 'var(--accent)' : 'var(--bg3)' }}>
+                    <div className="absolute top-0.5 h-3 w-3 rounded-full bg-white transition-all"
+                      style={{ left: platforms.linkedin.enabled ? '18px' : '2px' }} />
+                  </button>
+                </div>
+                <div className={`transition-opacity ${platforms.linkedin.enabled ? '' : 'opacity-40'}`}>
+                  <LinkedInPreview
+                    caption={caption}
+                    hashtags={['BuildInPublic', 'SaaS', 'Entrepreneurship']}
+                    isEnabled={platforms.linkedin.enabled}
+                  />
+                </div>
+              </div>
+
+              {/* YouTube Shorts Preview */}
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-medium" style={{ color: 'var(--text2)' }}>YouTube Shorts</span>
+                  <button
+                    onClick={() => updatePlatform('youtube', { enabled: !platforms.youtube.enabled })}
+                    className="w-8 h-4 rounded-full relative transition-all"
+                    style={{ background: platforms.youtube.enabled ? 'var(--accent)' : 'var(--bg3)' }}>
+                    <div className="absolute top-0.5 h-3 w-3 rounded-full bg-white transition-all"
+                      style={{ left: platforms.youtube.enabled ? '18px' : '2px' }} />
+                  </button>
+                </div>
+                <div className={`transition-opacity ${platforms.youtube.enabled ? '' : 'opacity-40'}`}>
+                  <YouTubeShortsPreview
+                    caption={caption}
+                    hashtags={['shorts', 'saas', 'tutorial']}
+                    isEnabled={platforms.youtube.enabled}
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </main>
@@ -469,38 +552,8 @@ export default function DashboardPage() {
 
           <div className="h-px" style={{ background: 'var(--border)' }} />
 
-          <div className="text-[11px] font-mono uppercase tracking-widest" style={{ color: 'var(--text3)' }}>
-            Platform Integrations
-          </div>
-
-          {([
-            ['youtube', 'Connected', 'badge-success'],
-            ['tiktok', 'Connected', 'badge-success'],
-            ['linkedin', 'Token Expiring', 'badge-warning'],
-            ['facebook', 'Not Connected', 'badge-error'],
-          ] as [Platform, string, string][]).map(([p, label, variant]) => {
-            const badgeStyle: Record<string, { color: string; bg: string }> = {
-              'badge-success': { color: 'var(--success)', bg: 'rgba(52,211,153,0.1)' },
-              'badge-warning': { color: 'var(--warning)', bg: 'rgba(251,191,36,0.1)' },
-              'badge-error': { color: 'var(--danger)', bg: 'rgba(248,113,113,0.1)' },
-            };
-            return (
-              <div key={p} className="flex items-center justify-between px-3 py-2 rounded-lg border"
-                style={{ background: 'var(--bg1)', borderColor: 'var(--border)' }}>
-                <div className="flex items-center gap-2">
-                  <div className="w-[22px] h-[22px] rounded flex items-center justify-center text-[9px] font-bold"
-                    style={{ background: `${PLATFORM_COLORS[p]}22`, color: PLATFORM_COLORS[p] }}>
-                    {p === 'youtube' ? 'YT' : p === 'tiktok' ? 'TT' : p === 'linkedin' ? 'LI' : 'FB'}
-                  </div>
-                  <span className="text-xs capitalize">{p}</span>
-                </div>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded"
-                  style={badgeStyle[variant]}>
-                  {label}
-                </span>
-              </div>
-            );
-          })}
+          {/* Enhanced Account Manager */}
+          <AccountManager />
 
           <div className="h-px" style={{ background: 'var(--border)' }} />
 
@@ -522,6 +575,7 @@ export default function DashboardPage() {
             </div>
           ))}
         </aside>
+      </div>
       </div>
     </div>
   );
