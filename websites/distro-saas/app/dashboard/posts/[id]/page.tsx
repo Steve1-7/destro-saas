@@ -6,7 +6,12 @@ import { ArrowLeft, ExternalLink, RefreshCw } from 'lucide-react';
 import type { Platform, Distribution } from '@/types';
 
 const PLATFORM_COLORS: Record<Platform, string> = {
-  youtube: '#ff0000', tiktok: '#ff0050', linkedin: '#0077b5', facebook: '#1877f2',
+  youtube: '#ff0000',
+  tiktok: '#ff0050',
+  linkedin: '#0077b5',
+  facebook: '#1877f2',
+  instagram: '#e4405f',
+  twitter: '#1da1f2',
 };
 
 const MOCK_DISTRIBUTIONS: Distribution[] = [
@@ -73,7 +78,7 @@ export default function PostDetailPage({ params }: { params: { id: string } }) {
                 <div className="flex items-center gap-2">
                   <div className="w-6 h-6 rounded flex items-center justify-center text-[10px] font-bold"
                     style={{ background: `${PLATFORM_COLORS[d.platform]}22`, color: PLATFORM_COLORS[d.platform] }}>
-                    {d.platform === 'youtube' ? 'YT' : d.platform === 'tiktok' ? 'TT' : d.platform === 'linkedin' ? 'LI' : 'FB'}
+                    {d.platform === 'youtube' ? 'YT' : d.platform === 'tiktok' ? 'TT' : d.platform === 'linkedin' ? 'LI' : d.platform === 'facebook' ? 'FB' : d.platform === 'instagram' ? 'IG' : 'TW'}
                   </div>
                   <span className="text-sm font-medium capitalize">{d.platform}</span>
                 </div>

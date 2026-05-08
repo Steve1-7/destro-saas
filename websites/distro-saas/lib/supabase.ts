@@ -2,15 +2,22 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Post, Integration, Distribution } from '@/types';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-// Browser client (singleton)
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Browser client (singleton). Guard creation so builds don't fail when env vars
+// are not provided (CI / static analysis). At runtime in production these
+// variables should be set and the client will be created.
+export const supabase: any =
+  supabaseUrl && supabaseAnonKey ? createClient(supabaseUrl, supabaseAnonKey) : null;
 
 // Server-side admin client (service role — never expose to client)
 export function createAdminClient() {
-  return createClient(supabaseUrl, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!supabaseUrl || !serviceKey) {
+    throw new Error('SUPABASE_SERVICE_ROLE_KEY and NEXT_PUBLIC_SUPABASE_URL are required for admin client');
+  }
+  return createClient(supabaseUrl, serviceKey, {
     auth: { autoRefreshToken: false, persistSession: false },
   });
 }

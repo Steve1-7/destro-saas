@@ -9,10 +9,12 @@ const PLATFORM_COLORS: Record<Platform, string> = {
   tiktok: '#ff0050',
   linkedin: '#0077b5',
   facebook: '#1877f2',
+  instagram: '#e4405f',
+  twitter: '#1da1f2',
 };
 
 const PLATFORM_ABBR: Record<Platform, string> = {
-  youtube: 'YT', tiktok: 'TT', linkedin: 'LI', facebook: 'FB',
+  youtube: 'YT', tiktok: 'TT', linkedin: 'LI', facebook: 'FB', instagram: 'IG', twitter: 'TW',
 };
 
 interface PlatformEntry {

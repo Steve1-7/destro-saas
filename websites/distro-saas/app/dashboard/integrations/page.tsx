@@ -10,6 +10,8 @@ const OAUTH_URLS: Record<Platform, string> = {
   tiktok: `https://www.tiktok.com/v2/auth/authorize?client_key=${process.env.NEXT_PUBLIC_TIKTOK_CLIENT_KEY}&redirect_uri=${encodeURIComponent(typeof window !== 'undefined' ? window.location.origin : '')}/api/integrations/oauth/tiktok&response_type=code&scope=video.upload`,
   linkedin: `https://www.linkedin.com/oauth/v2/authorization?client_id=${process.env.NEXT_PUBLIC_LINKEDIN_CLIENT_ID}&redirect_uri=${encodeURIComponent(typeof window !== 'undefined' ? window.location.origin : '')}/api/integrations/oauth/linkedin&response_type=code&scope=w_member_social`,
   facebook: `https://www.facebook.com/dialog/oauth?client_id=${process.env.NEXT_PUBLIC_FACEBOOK_APP_ID}&redirect_uri=${encodeURIComponent(typeof window !== 'undefined' ? window.location.origin : '')}/api/integrations/oauth/facebook&scope=pages_manage_posts,pages_read_engagement`,
+  instagram: `https://api.instagram.com/oauth/authorize?client_id=${process.env.NEXT_PUBLIC_INSTAGRAM_CLIENT_ID}&redirect_uri=${encodeURIComponent(typeof window !== 'undefined' ? window.location.origin : '')}/api/integrations/oauth/instagram&response_type=code&scope=user_profile,user_media`,
+  twitter: `https://twitter.com/i/oauth2/authorize?client_id=${process.env.NEXT_PUBLIC_TWITTER_CLIENT_ID}&redirect_uri=${encodeURIComponent(typeof window !== 'undefined' ? window.location.origin : '')}/api/integrations/oauth/twitter&response_type=code&scope=tweet.read%20tweet.write%20users.read%20offline.access`,
 };
 
 type IntegrationStatus = 'connected' | 'expiring' | 'disconnected';
@@ -55,6 +57,20 @@ const PLATFORMS: Record<Platform, PlatformInfo> = {
     color: '#1877f2',
     abbr: 'FB',
     description: 'Publish to your Facebook Pages via Graph API',
+    status: 'disconnected',
+  },
+  instagram: {
+    label: 'Instagram',
+    color: '#e4405f',
+    abbr: 'IG',
+    description: 'Publish to Instagram (Business) via Graph API',
+    status: 'disconnected',
+  },
+  twitter: {
+    label: 'X/Twitter',
+    color: '#1da1f2',
+    abbr: 'TW',
+    description: 'Publish short posts to Twitter (X)',
     status: 'disconnected',
   },
 };

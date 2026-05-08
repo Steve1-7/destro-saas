@@ -42,12 +42,25 @@ Guidelines:
 - Use 1-2 emojis max
 - End with an open-ended question
 - Max 500 characters`,
+  instagram: `You are an Instagram content creator. Rewrite the following caption for Instagram.
+Guidelines:
+- Visual-first, short paragraph with emojis
+- Include location or mention placeholders when relevant
+- Use 3-7 hashtags at the end
+- Max 2200 characters, but aim for shorter`,
+
+  twitter: `You are a Twitter/X copywriter. Rewrite the following caption for Twitter.
+Guidelines:
+- Concise, punchy, and thread-friendly
+- Use plain text, include 1-2 hashtags
+- Max 280 characters per post
+- If appropriate, suggest a short thread starter`,
 };
 
 export async function generateCaptionVariants(
   masterCaption: string
 ): Promise<CaptionVariants> {
-  const platforms = ['linkedin', 'tiktok', 'youtube', 'facebook'] as const;
+  const platforms = ['linkedin', 'tiktok', 'youtube', 'facebook', 'instagram', 'twitter'] as const;
 
   const results = await Promise.all(
     platforms.map(async (platform) => {

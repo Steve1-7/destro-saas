@@ -26,6 +26,12 @@ const platformHandlers: Record<Platform, PlatformHandler> = {
   tiktok: (p, t) => publishToTikTok(p, t),
   linkedin: (p, t, extra) => publishToLinkedIn(p, t, extra ?? ''),
   facebook: (p, t, extra) => publishToFacebook(p, t, extra ?? ''),
+  instagram: async () => {
+    throw new Error('Publishing to Instagram is not implemented');
+  },
+  twitter: async () => {
+    throw new Error('Publishing to Twitter is not implemented');
+  },
 };
 
 export async function POST(
@@ -34,7 +40,7 @@ export async function POST(
 ) {
   const platform = params.platform as Platform;
 
-  if (!['youtube', 'tiktok', 'linkedin', 'facebook'].includes(platform)) {
+  if (!['youtube', 'tiktok', 'linkedin', 'facebook', 'instagram', 'twitter'].includes(platform)) {
     return NextResponse.json({ error: 'Invalid platform' }, { status: 400 });
   }
 

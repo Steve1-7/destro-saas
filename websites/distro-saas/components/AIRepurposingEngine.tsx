@@ -271,7 +271,7 @@ export function AIRepurposingEngine({ isOpen = true, onClose }: AIRepurposingEng
                                   color: 'var(--text3)',
                                 }}
                               >
-                                {item.platform}
+                                {String(item.platform)}
                               </span>
                             )}
                             <p className="flex-1 text-xs leading-relaxed" style={{ color: 'var(--text2)' }}>

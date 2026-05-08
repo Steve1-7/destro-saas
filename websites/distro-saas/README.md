@@ -152,6 +152,36 @@ Realtime-enabled for SSE streaming.
 
 ---
 
+## Deploying to Vercel
+
+This project is ready for deployment on Vercel (Next.js). Follow these steps:
+
+- **Connect repository** to Vercel via GitHub/GitLab/Bitbucket.
+- **Add Environment Variables** in the Vercel dashboard (copy values from `.env.local.example`). Important variables:
+    - `NEXT_PUBLIC_SUPABASE_URL`
+    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+    - `SUPABASE_SERVICE_ROLE_KEY`
+    - `ANTHROPIC_API_KEY`
+    - `YOUTUBE_CLIENT_ID`, `YOUTUBE_CLIENT_SECRET`
+    - `TIKTOK_CLIENT_KEY`, `TIKTOK_CLIENT_SECRET`
+    - `LINKEDIN_CLIENT_ID`, `LINKEDIN_CLIENT_SECRET`
+    - `FACEBOOK_APP_ID`, `FACEBOOK_APP_SECRET`
+    - `NEXTAUTH_URL` (set to your production Vercel URL)
+    - `NEXTAUTH_SECRET`
+
+- **Deploy with the Vercel CLI** (optional):
+
+```bash
+npm install -g vercel
+vercel login
+# Link the project interactively or automatically
+vercel link
+# Deploy to production
+vercel --prod
+```
+
+- **Notes**: `vercel.json` is already configured to use `@vercel/next`. Update it if you need custom build or routing behavior.
+
 ## License
 
 MIT

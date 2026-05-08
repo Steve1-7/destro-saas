@@ -25,6 +25,18 @@ const OAUTH_CONFIGS: Record<Platform, { tokenUrl: string; clientId: string; clie
     clientId: process.env.FACEBOOK_APP_ID!,
     clientSecret: process.env.FACEBOOK_APP_SECRET!,
   },
+  instagram: {
+    // Instagram token exchange (Basic Display / Graph compatibility)
+    tokenUrl: 'https://api.instagram.com/oauth/access_token',
+    clientId: process.env.INSTAGRAM_CLIENT_ID!,
+    clientSecret: process.env.INSTAGRAM_CLIENT_SECRET!,
+  },
+  twitter: {
+    // Twitter OAuth2 token endpoint
+    tokenUrl: 'https://api.twitter.com/2/oauth2/token',
+    clientId: process.env.TWITTER_CLIENT_ID!,
+    clientSecret: process.env.TWITTER_CLIENT_SECRET!,
+  },
 };
 
 export async function GET(
