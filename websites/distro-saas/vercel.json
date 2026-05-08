@@ -4,11 +4,6 @@
   "outputDirectory": ".next",
   "framework": "nextjs",
   "installCommand": "npm install",
-  "rewrites": [
-    { "source": "/dashboard/:path*", "destination": "/dashboard/:path*" },
-    { "source": "/login", "destination": "/login" },
-    { "source": "/api/:path*", "destination": "/api/:path*" }
-  ],
   "headers": [
     {
       "source": "/(.*)",
