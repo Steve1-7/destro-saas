@@ -3,21 +3,21 @@
 // app/dashboard/posts/[id]/page.tsx
 import { useState } from 'react';
 import { ArrowLeft, ExternalLink, RefreshCw } from 'lucide-react';
-import type { Platform } from '@/types';
+import type { Platform, Distribution } from '@/types';
 
 const PLATFORM_COLORS: Record<Platform, string> = {
   youtube: '#ff0000', tiktok: '#ff0050', linkedin: '#0077b5', facebook: '#1877f2',
 };
 
-const MOCK_DISTRIBUTIONS = [
-  { platform: 'youtube' as Platform, status: 'published', progress: 100, externalUrl: 'https://youtube.com/shorts/abc', published_at: new Date().toISOString(), external_id: 'abc123' },
-  { platform: 'tiktok' as Platform, status: 'published', progress: 100, externalUrl: 'https://tiktok.com/@user/video/123', published_at: new Date().toISOString(), external_id: 'tik456' },
-  { platform: 'linkedin' as Platform, status: 'failed', progress: 0, error_message: 'Token expired — reconnect LinkedIn', retry_count: 3 },
-  { platform: 'facebook' as Platform, status: 'queued', progress: 0 },
+const MOCK_DISTRIBUTIONS: Distribution[] = [
+  { platform: 'youtube', status: 'published', progress: 100, external_url: 'https://youtube.com/shorts/abc', published_at: new Date().toISOString(), external_id: 'abc123', id: '1', post_id: '1', retry_count: 0 },
+  { platform: 'tiktok', status: 'published', progress: 100, external_url: 'https://tiktok.com/@user/video/123', published_at: new Date().toISOString(), external_id: 'tik456', id: '2', post_id: '1', retry_count: 0 },
+  { platform: 'linkedin', status: 'failed', progress: 0, error_message: 'Token expired — reconnect LinkedIn', retry_count: 3, id: '3', post_id: '1' },
+  { platform: 'facebook', status: 'queued', progress: 0, id: '4', post_id: '1', retry_count: 0 },
 ];
 
 export default function PostDetailPage({ params }: { params: { id: string } }) {
-  const [distributions, setDistributions] = useState(MOCK_DISTRIBUTIONS);
+  const [distributions, setDistributions] = useState<Distribution[]>(MOCK_DISTRIBUTIONS);
 
   async function retry(platform: Platform) {
     setDistributions(prev =>

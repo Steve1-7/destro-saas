@@ -71,5 +71,5 @@ export async function generateCaptionVariants(
     })
   );
 
-  return Object.fromEntries(results) as CaptionVariants;
+  return Object.fromEntries(results) as unknown as CaptionVariants;
 }

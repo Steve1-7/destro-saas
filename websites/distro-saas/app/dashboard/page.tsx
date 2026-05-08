@@ -164,7 +164,7 @@ export default function DashboardPage() {
         youtube: 'I Built a Real-Time Analytics Dashboard | Next.js 14 + Supabase Full Stack Dev Log 🚀\n\nIn this video: architecture, performance tips, and lessons learned.\n\n#nextjs14 #supabase #webdevelopment',
         facebook: "Hey everyone! 👋 Super stoked to share what we've been building — our brand new analytics dashboard just went live! What features would you want to see next? Drop a comment! 👇",
       });
-      setSelectedVariants(new Set(['youtube', 'tiktok', 'linkedin', 'facebook']));
+      setSelectedVariants(new Set(['youtube', 'tiktok', 'linkedin', 'facebook'] as Platform[]));
     } finally {
       setGeneratingAI(false);
     }
