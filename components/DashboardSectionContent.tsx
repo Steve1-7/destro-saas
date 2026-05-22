@@ -42,9 +42,14 @@ export function DashboardSectionContent({ section }: DashboardSectionContentProp
       return <AutomationBuilder />;
     case 'integrations':
       return (
-        <div className="max-w-md">
-          <h2 className="font-display font-semibold text-lg mb-4">Connected Accounts</h2>
+        <div className="max-w-2xl w-full">
           <AccountManager />
+          <p className="text-xs mt-4" style={{ color: 'var(--text3)' }}>
+            <a href="/dashboard/integrations" className="underline hover:text-[var(--accent)]">
+              Open full integrations page
+            </a>{' '}
+            for all platforms and connection details.
+          </p>
         </div>
       );
     case 'trends':

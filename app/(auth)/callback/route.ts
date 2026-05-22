@@ -1,16 +1,9 @@
-// app/(auth)/callback/route.ts
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
+import { getAppOrigin } from '@/lib/app-url';
 
+/** Redirect legacy /callback to canonical /auth/callback */
 export async function GET(req: NextRequest) {
-  const { searchParams, origin } = new URL(req.url);
-  const code = searchParams.get('code');
-
-  if (code) {
-    const supabase = createRouteHandlerClient({ cookies });
-    await supabase.auth.exchangeCodeForSession(code);
-  }
-
-  return NextResponse.redirect(`${origin}/dashboard`);
+  const url = new URL(req.url);
+  const target = new URL(`/auth/callback${url.search}`, getAppOrigin());
+  return NextResponse.redirect(target);
 }

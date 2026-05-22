@@ -1,12 +1,26 @@
 'use client';
 
 // app/(auth)/login/page.tsx
-import { useState } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Loader2, Mail, Github, Chrome, Eye, EyeOff, Lock, User } from 'lucide-react';
 
-export default function LoginPage() {
+function getAuthCallbackUrl(nextPath?: string): string {
+  const url = new URL(`${window.location.origin}/auth/callback`);
+  if (nextPath && nextPath !== '/dashboard') {
+    url.searchParams.set('next', nextPath);
+  }
+  return url.toString();
+}
+
+function getPostLoginPath(nextParam: string | null): string {
+  if (!nextParam) return '/dashboard';
+  if (!nextParam.startsWith('/') || nextParam.startsWith('//')) return '/dashboard';
+  return nextParam;
+}
+
+function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -16,6 +30,13 @@ export default function LoginPage() {
   const [activeTab, setActiveTab] = useState<'magic' | 'password' | 'oauth'>('magic');
   const supabase = createClientComponentClient();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const nextPath = getPostLoginPath(searchParams.get('next'));
+
+  useEffect(() => {
+    const urlError = searchParams.get('error');
+    if (urlError) setError(urlError);
+  }, [searchParams]);
 
   async function handleMagicLink(e: React.FormEvent) {
     e.preventDefault();
@@ -24,7 +45,7 @@ export default function LoginPage() {
 
     const { error } = await supabase.auth.signInWithOtp({
       email,
-      options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
+      options: { emailRedirectTo: getAuthCallbackUrl(nextPath) },
     });
 
     if (error) {
@@ -48,7 +69,7 @@ export default function LoginPage() {
     if (error) {
       setError(error.message);
     } else {
-      router.push('/dashboard');
+      router.push(nextPath);
       router.refresh();
     }
     setLoading(false);
@@ -62,7 +83,7 @@ export default function LoginPage() {
     const { error } = await supabase.auth.signUp({
       email,
       password,
-      options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
+      options: { emailRedirectTo: getAuthCallbackUrl(nextPath) },
     });
 
     if (error) {
@@ -77,13 +98,37 @@ export default function LoginPage() {
     setLoading(true);
     setError('');
 
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider,
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
-    });
+    const redirectTo = getAuthCallbackUrl(nextPath);
+    console.log('[auth] Starting Supabase OAuth', { provider, redirectTo, nextPath });
 
-    if (error) {
-      setError(error.message);
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: { redirectTo },
+      });
+
+      if (error) {
+        console.error('[auth] signInWithOAuth error', error);
+        setError(error.message);
+        setLoading(false);
+        return;
+      }
+
+      if (data?.url) {
+        console.log('[auth] Redirecting to provider URL');
+        window.location.assign(data.url);
+        return;
+      }
+
+      console.warn('[auth] signInWithOAuth returned no URL');
+      setError(
+        'Could not open the login page. Enable Google/GitHub in Supabase → Authentication → Providers and add this redirect URL: ' +
+          redirectTo
+      );
+      setLoading(false);
+    } catch (err) {
+      console.error('[auth] OAuth unexpected error', err);
+      setError(err instanceof Error ? err.message : 'OAuth failed');
       setLoading(false);
     }
   }
@@ -285,5 +330,19 @@ export default function LoginPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg)' }}>
+          <Loader2 className="animate-spin" size={24} style={{ color: 'var(--accent)' }} />
+        </div>
+      }
+    >
+      <LoginForm />
+    </Suspense>
   );
 }

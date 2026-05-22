@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import {
   Youtube,
@@ -21,6 +21,7 @@ import {
   User,
 } from 'lucide-react';
 import { useAccountStore, useUIStore } from '@/lib/store';
+import { connectPlatformOAuth } from '@/lib/connect-oauth';
 import type { Platform, ConnectedAccount } from '@/types';
 
 const PLATFORM_CONFIG: Record<Platform, { icon: React.ReactNode; color: string; name: string }> = {
@@ -44,16 +45,58 @@ interface AccountManagerProps {
 }
 
 export function AccountManager({ className }: AccountManagerProps) {
-  const { accounts, selectedAccountId, isConnecting, selectAccount, setIsConnecting } = useAccountStore();
+  const {
+    accounts,
+    selectedAccountId,
+    isConnecting,
+    selectAccount,
+    setIsConnecting,
+    setAccounts,
+    removeAccount,
+  } = useAccountStore();
   const { addToast } = useUIStore();
   const [expandedPlatforms, setExpandedPlatforms] = useState<Set<Platform>>(new Set());
   const [showAddMenu, setShowAddMenu] = useState(false);
+  const [loadingAccounts, setLoadingAccounts] = useState(true);
 
   const accountsByPlatform = accounts.reduce((acc, account) => {
     if (!acc[account.platform]) acc[account.platform] = [];
     acc[account.platform].push(account);
     return acc;
   }, {} as Record<Platform, ConnectedAccount[]>);
+
+  const loadAccounts = useCallback(async () => {
+    setLoadingAccounts(true);
+    try {
+      const res = await fetch('/api/integrations', { credentials: 'include' });
+      const body = await res.json().catch(() => ({}));
+      console.log('[AccountManager] Loaded integrations', res.status, body);
+
+      if (!res.ok) {
+        if (res.status !== 401) {
+          addToast({
+            type: 'error',
+            message: body.error ?? 'Failed to load connected accounts',
+          });
+        }
+        return;
+      }
+
+      setAccounts(body.accounts ?? []);
+    } catch (err) {
+      console.error('[AccountManager] Load error', err);
+      addToast({
+        type: 'error',
+        message: err instanceof Error ? err.message : 'Network error loading accounts',
+      });
+    } finally {
+      setLoadingAccounts(false);
+    }
+  }, [addToast, setAccounts]);
+
+  useEffect(() => {
+    loadAccounts();
+  }, [loadAccounts]);
 
   const togglePlatformExpand = (platform: Platform) => {
     setExpandedPlatforms((prev) => {
@@ -68,22 +111,52 @@ export function AccountManager({ className }: AccountManagerProps) {
   };
 
   const handleConnect = async (platform: Platform) => {
+    if (isConnecting) return;
+
     setIsConnecting(true);
     setShowAddMenu(false);
-    
-    // Simulate OAuth flow
-    setTimeout(() => {
-      addToast({ type: 'success', message: `${PLATFORM_CONFIG[platform].name} account connected!` });
+    console.log('[AccountManager] Connect clicked', platform);
+
+    try {
+      const result = await connectPlatformOAuth(platform);
+      if (!result.ok) {
+        addToast({ type: 'error', message: result.message });
+        setIsConnecting(false);
+      }
+      // On success the page redirects — keep loading state
+    } catch (err) {
+      console.error('[AccountManager] Connect error', err);
+      addToast({
+        type: 'error',
+        message: err instanceof Error ? err.message : 'Failed to start OAuth',
+      });
       setIsConnecting(false);
-    }, 1500);
+    }
   };
 
-  const handleDisconnect = (accountId: string) => {
-    addToast({ type: 'info', message: 'Account disconnected' });
+  const handleDisconnect = async (account: ConnectedAccount) => {
+    try {
+      const res = await fetch(`/api/integrations/${account.platform}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        addToast({ type: 'error', message: body.error ?? 'Failed to disconnect' });
+        return;
+      }
+      removeAccount(account.id);
+      addToast({ type: 'success', message: `${PLATFORM_CONFIG[account.platform].name} disconnected` });
+      await loadAccounts();
+    } catch (err) {
+      console.error('[AccountManager] Disconnect error', err);
+      addToast({ type: 'error', message: 'Network error while disconnecting' });
+    }
   };
 
-  const handleReconnect = (accountId: string) => {
-    addToast({ type: 'info', message: 'Reconnecting account...' });
+  const handleReconnect = (account: ConnectedAccount) => {
+    addToast({ type: 'info', message: `Opening ${PLATFORM_CONFIG[account.platform].name} login...` });
+    void handleConnect(account.platform);
   };
 
   const allPlatforms: Platform[] = ['youtube', 'tiktok', 'linkedin', 'facebook', 'instagram', 'twitter'];
@@ -97,11 +170,14 @@ export function AccountManager({ className }: AccountManagerProps) {
             Connected Accounts
           </h3>
           <p className="text-[11px]" style={{ color: 'var(--text3)' }}>
-            {accounts.length} account{accounts.length !== 1 ? 's' : ''} connected
+            {loadingAccounts
+              ? 'Loading...'
+              : `${accounts.filter((a) => a.connection_status === 'connected').length} connected`}
           </p>
         </div>
         <div className="relative">
           <button
+            type="button"
             onClick={() => setShowAddMenu(!showAddMenu)}
             disabled={isConnecting}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all disabled:opacity-50"
@@ -112,10 +188,9 @@ export function AccountManager({ className }: AccountManagerProps) {
             ) : (
               <Plus size={14} />
             )}
-            {isConnecting ? 'Connecting...' : 'Add Account'}
+            {isConnecting ? 'Connecting...' : 'Connect Account'}
           </button>
 
-          {/* Add Account Dropdown */}
           {showAddMenu && (
             <motion.div
               initial={{ opacity: 0, y: -10, scale: 0.95 }}
@@ -129,15 +204,20 @@ export function AccountManager({ className }: AccountManagerProps) {
                 return (
                   <button
                     key={platform}
+                    type="button"
                     onClick={() => handleConnect(platform)}
-                    className="w-full flex items-center gap-3 px-3 py-2.5 text-left transition-all hover:bg-white/5"
+                    disabled={isConnecting}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 text-left transition-all hover:bg-white/5 disabled:opacity-50"
                   >
                     <span style={{ color: config.color }}>{config.icon}</span>
                     <span className="text-sm" style={{ color: 'var(--text2)' }}>
                       {config.name}
                     </span>
                     {hasAccounts && (
-                      <span className="ml-auto text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: 'var(--bg3)', color: 'var(--text3)' }}>
+                      <span
+                        className="ml-auto text-[10px] px-1.5 py-0.5 rounded-full"
+                        style={{ background: 'var(--bg3)', color: 'var(--text3)' }}
+                      >
                         +{accountsByPlatform[platform].length}
                       </span>
                     )}
@@ -163,8 +243,8 @@ export function AccountManager({ className }: AccountManagerProps) {
               className="rounded-xl border overflow-hidden transition-all"
               style={{ background: 'var(--bg2)', borderColor: 'var(--border)' }}
             >
-              {/* Platform Header */}
               <button
+                type="button"
                 onClick={() => togglePlatformExpand(platform)}
                 className="w-full flex items-center justify-between px-3 py-2.5 text-left"
               >
@@ -180,17 +260,17 @@ export function AccountManager({ className }: AccountManagerProps) {
                       {config.name}
                     </span>
                     <p className="text-[10px]" style={{ color: 'var(--text3)' }}>
-                      {hasAccounts ? `${platformAccounts.length} account${platformAccounts.length !== 1 ? 's' : ''}` : 'Not connected'}
+                      {hasAccounts
+                        ? `${platformAccounts.length} account${platformAccounts.length !== 1 ? 's' : ''}`
+                        : 'Not connected'}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  {hasAccounts && platformAccounts.some(a => a.connection_status === 'connected') && (
-                    <div
-                      className="w-2 h-2 rounded-full"
-                      style={{ background: 'var(--success)' }}
-                    />
-                  )}
+                  {hasAccounts &&
+                    platformAccounts.some((a) => a.connection_status === 'connected') && (
+                      <div className="w-2 h-2 rounded-full" style={{ background: 'var(--success)' }} />
+                    )}
                   {isExpanded ? (
                     <ChevronDown size={16} style={{ color: 'var(--text3)' }} />
                   ) : (
@@ -199,7 +279,6 @@ export function AccountManager({ className }: AccountManagerProps) {
                 </div>
               </button>
 
-              {/* Account List */}
               {isExpanded && hasAccounts && (
                 <div className="border-t" style={{ borderColor: 'var(--border)' }}>
                   {platformAccounts.map((account) => {
@@ -214,10 +293,10 @@ export function AccountManager({ className }: AccountManagerProps) {
                       >
                         <div className="flex items-start justify-between">
                           <button
+                            type="button"
                             onClick={() => selectAccount(isSelected ? null : account.id)}
                             className="flex items-center gap-2 flex-1 text-left"
                           >
-                            {/* Avatar */}
                             <div
                               className="w-7 h-7 rounded-full flex items-center justify-center overflow-hidden"
                               style={{ background: 'var(--bg3)' }}
@@ -233,19 +312,23 @@ export function AccountManager({ className }: AccountManagerProps) {
                               )}
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="text-xs font-medium truncate" style={{ color: 'var(--text)' }}>
-                                {account.platform_display_name || account.platform_username || 'Account'}
+                              <p
+                                className="text-xs font-medium truncate"
+                                style={{ color: 'var(--text)' }}
+                              >
+                                {account.platform_display_name ||
+                                  account.platform_username ||
+                                  'Account'}
                               </p>
                               <p className="text-[10px]" style={{ color: 'var(--text3)' }}>
-                                @{account.platform_username}
+                                {account.platform_username
+                                  ? `@${account.platform_username}`
+                                  : platform}
                               </p>
                             </div>
-                            {isSelected && (
-                              <Check size={14} style={{ color: 'var(--accent)' }} />
-                            )}
+                            {isSelected && <Check size={14} style={{ color: 'var(--accent)' }} />}
                           </button>
 
-                          {/* Status Badge */}
                           <div className="flex items-center gap-1">
                             <span
                               className="text-[9px] font-mono px-1.5 py-0.5 rounded"
@@ -254,16 +337,21 @@ export function AccountManager({ className }: AccountManagerProps) {
                               {status.label}
                             </span>
                             <div className="relative group">
-                              <button className="p-1 rounded hover:bg-white/5 transition-colors">
+                              <button
+                                type="button"
+                                className="p-1 rounded hover:bg-white/5 transition-colors"
+                              >
                                 <MoreHorizontal size={14} style={{ color: 'var(--text3)' }} />
                               </button>
-                              
-                              {/* Dropdown Menu */}
-                              <div className="absolute right-0 top-full mt-1 w-40 rounded-lg border overflow-hidden opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-opacity z-10 shadow-xl"
-                                style={{ background: 'var(--bg1)', borderColor: 'var(--border2)' }}>
+
+                              <div
+                                className="absolute right-0 top-full mt-1 w-40 rounded-lg border overflow-hidden opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-opacity z-10 shadow-xl"
+                                style={{ background: 'var(--bg1)', borderColor: 'var(--border2)' }}
+                              >
                                 {account.connection_status !== 'connected' && (
                                   <button
-                                    onClick={() => handleReconnect(account.id)}
+                                    type="button"
+                                    onClick={() => handleReconnect(account)}
                                     className="w-full flex items-center gap-2 px-3 py-2 text-xs text-left hover:bg-white/5 transition-colors"
                                     style={{ color: 'var(--text2)' }}
                                   >
@@ -272,7 +360,8 @@ export function AccountManager({ className }: AccountManagerProps) {
                                   </button>
                                 )}
                                 <button
-                                  onClick={() => handleDisconnect(account.id)}
+                                  type="button"
+                                  onClick={() => handleDisconnect(account)}
                                   className="w-full flex items-center gap-2 px-3 py-2 text-xs text-left hover:bg-white/5 transition-colors"
                                   style={{ color: 'var(--danger)' }}
                                 >
@@ -284,7 +373,6 @@ export function AccountManager({ className }: AccountManagerProps) {
                           </div>
                         </div>
 
-                        {/* Additional Info */}
                         {account.expires_in_days && account.connection_status === 'expiring' && (
                           <div className="flex items-center gap-1 mt-1.5 ml-9">
                             <AlertCircle size={10} style={{ color: 'var(--warning)' }} />
@@ -307,15 +395,20 @@ export function AccountManager({ className }: AccountManagerProps) {
                 </div>
               )}
 
-              {/* Connect button when no accounts */}
               {isExpanded && !hasAccounts && (
                 <div className="px-3 py-3 border-t" style={{ borderColor: 'var(--border)' }}>
                   <button
+                    type="button"
                     onClick={() => handleConnect(platform)}
-                    className="w-full flex items-center justify-center gap-2 py-2 rounded-lg border text-xs font-medium transition-all hover:border-[var(--accent)]"
+                    disabled={isConnecting}
+                    className="w-full flex items-center justify-center gap-2 py-2 rounded-lg border text-xs font-medium transition-all hover:border-[var(--accent)] disabled:opacity-50"
                     style={{ borderColor: 'var(--border)', color: 'var(--text2)' }}
                   >
-                    <Plus size={14} />
+                    {isConnecting ? (
+                      <RefreshCw size={14} className="animate-spin" />
+                    ) : (
+                      <Plus size={14} />
+                    )}
                     Connect {config.name}
                   </button>
                 </div>

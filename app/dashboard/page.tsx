@@ -247,12 +247,15 @@ export default function DashboardPage() {
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
-        const response = await fetch('/api/notifications');
-        if (!response.ok) throw new Error('Failed to fetch notifications');
-        const data = await response.json();
-        // Notifications will be populated via the store
+        const response = await fetch('/api/notifications', { credentials: 'include' });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          console.warn('[dashboard] Notifications fetch failed', response.status, data);
+          return;
+        }
+        console.log('[dashboard] Notifications loaded', data.notifications?.length ?? 0);
       } catch (error) {
-        // Silent fail - notifications are not critical
+        console.warn('[dashboard] Notifications network error', error);
       }
     };
 
