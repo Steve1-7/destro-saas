@@ -11,7 +11,7 @@ import {
   BarChart3, Zap, Link2, Users, Settings,
   TrendingUp, Briefcase, Bell, Command,
   ChevronDown, ChevronUp, X, MoreHorizontal,
-  Plus, Heart, MessageCircle, Share2,
+  Plus, Heart, MessageCircle, Share2, Menu,
   Wand2, Copy, Check, AlertCircle,
   TrendingUp as TrendIcon,
   Flame,
@@ -24,10 +24,7 @@ import { useNavStore, useCommandPaletteStore, useNotificationStore, useCaptionSt
 import { CommandPalette } from '@/components/CommandPalette';
 import { NotificationCenter } from '@/components/NotificationCenter';
 import { SidebarNav } from '@/components/SidebarNav';
-import { AICaptionStudio } from '@/components/AICaptionStudio';
-import { AIRepurposingEngine } from '@/components/AIRepurposingEngine';
-import { ContentCalendar } from '@/components/ContentCalendar';
-import { AnalyticsDashboard } from '@/components/AnalyticsDashboard';
+import { DashboardSectionContent, isComposerSection } from '@/components/DashboardSectionContent';
 import { AccountManager } from '@/components/AccountManager';
 import { TikTokPreview, LinkedInPreview, YouTubeShortsPreview, InstagramPreview, TwitterPreview } from '@/components/previews';
 
@@ -239,7 +236,9 @@ export default function DashboardPage() {
   const PLATFORM_LIST: Platform[] = ['youtube', 'tiktok', 'linkedin', 'facebook', 'instagram', 'twitter'];
   
   // Store hooks for enhanced functionality
-  const { activeSection, sidebarCollapsed, setActiveSection } = useNavStore();
+  const { activeSection } = useNavStore();
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const showComposer = isComposerSection(activeSection);
   const { notifications, unreadCount, addNotification } = useNotificationStore();
   const { modals, openModal, closeModal } = useUIStore();
   const { accounts } = useAccountStore();
@@ -265,8 +264,24 @@ export default function DashboardPage() {
       {/* Global Components */}
       <CommandPalette />
       
-      {/* Sidebar Navigation */}
-      <SidebarNav className="flex-shrink-0 hidden lg:flex" />
+      {/* Sidebar Navigation — desktop */}
+      <SidebarNav className="flex-shrink-0 hidden lg:flex h-full" />
+
+      {/* Sidebar Navigation — mobile drawer */}
+      {mobileNavOpen && (
+        <>
+          <button
+            type="button"
+            aria-label="Close navigation menu"
+            className="fixed inset-0 z-40 bg-black/60 lg:hidden"
+            onClick={() => setMobileNavOpen(false)}
+          />
+          <SidebarNav
+            className="fixed inset-y-0 left-0 z-50 h-full lg:hidden shadow-xl"
+            onNavigate={() => setMobileNavOpen(false)}
+          />
+        </>
+      )}
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0">
@@ -274,6 +289,15 @@ export default function DashboardPage() {
         <header className="flex items-center justify-between px-5 h-[52px] border-b flex-shrink-0"
           style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
           <div className="flex items-center gap-3">
+            <button
+              type="button"
+              aria-label="Open navigation menu"
+              onClick={() => setMobileNavOpen(true)}
+              className="p-2 rounded-lg hover:bg-white/5 transition-colors lg:hidden"
+              style={{ color: 'var(--text2)' }}
+            >
+              <Menu size={20} />
+            </button>
             <div className="w-[26px] h-[26px] rounded-[6px] flex items-center justify-center"
               style={{ background: 'linear-gradient(135deg, var(--accent), var(--accent2))' }}>
               <svg width="14" height="14" fill="none" viewBox="0 0 24 24">
@@ -301,14 +325,16 @@ export default function DashboardPage() {
             </div>
             
             <div className="w-[7px] h-[7px] rounded-full animate-pulse" style={{ background: 'var(--success)' }} />
-            <button
-              onClick={publishAll}
-              disabled={publishing}
-              className="flex items-center gap-2 px-4 py-1.5 rounded-lg text-[13px] font-medium transition-all disabled:opacity-40 hover:shadow-lg hover:shadow-[var(--accent-glow)]"
-              style={{ background: 'var(--accent)', color: '#040d0a' }}>
-              {publishing ? <Loader2 size={13} className="animate-spin" /> : <Send size={13} />}
-              {publishing ? 'Publishing...' : 'Publish All'}
-            </button>
+            {showComposer && (
+              <button
+                onClick={publishAll}
+                disabled={publishing}
+                className="flex items-center gap-2 px-4 py-1.5 rounded-lg text-[13px] font-medium transition-all disabled:opacity-40 hover:shadow-lg hover:shadow-[var(--accent-glow)]"
+                style={{ background: 'var(--accent)', color: '#040d0a' }}>
+                {publishing ? <Loader2 size={13} className="animate-spin" /> : <Send size={13} />}
+                {publishing ? 'Publishing...' : 'Publish All'}
+              </button>
+            )}
           </div>
         </header>
 
@@ -316,6 +342,8 @@ export default function DashboardPage() {
         <div className="flex-1 overflow-hidden flex">
           {/* Main Scrollable Content */}
           <main className="flex-1 overflow-y-auto p-5">
+          {showComposer ? (
+          <>
           {/* Row 1: Upload + Caption */}
           <div className="grid grid-cols-2 gap-4">
             {/* Upload */}
@@ -537,10 +565,15 @@ export default function DashboardPage() {
               </div>
             </div>
           </div>
+          </>
+          ) : (
+            <DashboardSectionContent section={activeSection} />
+          )}
         </main>
 
-        {/* Sidebar */}
-        <aside className="w-[300px] border-l overflow-y-auto p-4 flex flex-col gap-4 flex-shrink-0"
+        {/* Distribution sidebar — composer only */}
+        {showComposer && (
+        <aside className="hidden xl:flex xl:flex-col w-[300px] border-l overflow-y-auto p-4 gap-4 flex-shrink-0"
           style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
           <div className="text-[11px] font-mono uppercase tracking-widest" style={{ color: 'var(--text3)' }}>
             Distribution Status
@@ -575,6 +608,7 @@ export default function DashboardPage() {
             </div>
           ))}
         </aside>
+        )}
       </div>
       </div>
     </div>

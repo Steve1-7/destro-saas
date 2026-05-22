@@ -48,10 +48,16 @@ const NAV_ITEMS: NavItem[] = [
 
 interface SidebarNavProps {
   className?: string;
+  onNavigate?: () => void;
 }
 
-export function SidebarNav({ className }: SidebarNavProps) {
+export function SidebarNav({ className, onNavigate }: SidebarNavProps) {
   const { activeSection, sidebarCollapsed, setActiveSection, toggleSidebar } = useNavStore();
+
+  const handleNavClick = (sectionId: string) => {
+    setActiveSection(sectionId);
+    onNavigate?.();
+  };
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
 
   return (
@@ -101,7 +107,7 @@ export function SidebarNav({ className }: SidebarNavProps) {
           return (
             <button
               key={item.id}
-              onClick={() => setActiveSection(item.id)}
+              onClick={() => handleNavClick(item.id)}
               onMouseEnter={() => setHoveredItem(item.id)}
               onMouseLeave={() => setHoveredItem(null)}
               className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all relative group"
