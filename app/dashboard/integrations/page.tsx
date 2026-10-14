@@ -220,7 +220,7 @@ function IntegrationsPageContent() {
   }
 
   return (
-    <div className="min-h-screen p-6" style={{ background: 'var(--bg)' }}>
+    <div className="min-h-screen p-4 sm:p-6" style={{ background: 'var(--bg)' }}>
       <div className="max-w-3xl mx-auto flex flex-col gap-6">
         <div>
           <h1 className="font-display font-bold text-xl">Platform Integrations</h1>
@@ -244,18 +244,18 @@ function IntegrationsPageContent() {
             return (
               <div
                 key={key}
-                className="rounded-xl border p-5 flex items-center justify-between gap-4"
+                className="rounded-xl border p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
                 style={{ background: 'var(--bg1)', borderColor: 'var(--border)' }}
               >
-                <div className="flex items-start gap-4">
+                <div className="flex items-start gap-3 sm:gap-4 min-w-0">
                   <div
                     className="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold flex-shrink-0"
                     style={{ background: `${info.color}22`, color: info.color }}
                   >
                     {info.abbr}
                   </div>
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2 mb-1">
                       <span className="font-display font-semibold text-sm">{info.label}</span>
                       <span
                         className="flex items-center gap-1 text-[10px] font-mono px-2 py-0.5 rounded"
@@ -278,7 +278,7 @@ function IntegrationsPageContent() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 flex-shrink-0">
+                <div className="flex flex-wrap items-center gap-2 sm:flex-shrink-0">
                   {info.status === 'disconnected' ? (
                     <button
                       type="button"

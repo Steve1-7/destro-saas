@@ -91,8 +91,8 @@ export function TeamManager({ className }: TeamManagerProps) {
   return (
     <div className={`space-y-4 ${className}`}>
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-wrap items-center gap-3 sm:gap-4">
           <h3 className="font-display font-semibold text-lg" style={{ color: 'var(--text)' }}>
             Team Members
           </h3>
@@ -163,7 +163,7 @@ export function TeamManager({ className }: TeamManagerProps) {
                 <label className="text-[11px] font-mono uppercase tracking-wider mb-2 block" style={{ color: 'var(--text3)' }}>
                   Role
                 </label>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   {(['admin', 'editor', 'viewer'] as TeamRole[]).map((role) => {
                     const config = ROLE_CONFIG[role];
                     return (

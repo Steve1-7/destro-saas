@@ -174,7 +174,7 @@ export function AICaptionStudio({ onGenerate, onRewrite }: AICaptionStudioProps)
   return (
     <div className="rounded-xl border overflow-hidden" style={{ background: 'var(--bg1)', borderColor: 'var(--border)' }}>
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: 'var(--border)' }}>
+      <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 border-b" style={{ borderColor: 'var(--border)' }}>
         <div className="flex items-center gap-2">
           <Wand2 size={18} style={{ color: 'var(--accent)' }} />
           <span className="font-display font-semibold text-[13px]">AI Caption Studio</span>
@@ -204,7 +204,7 @@ export function AICaptionStudio({ onGenerate, onRewrite }: AICaptionStudioProps)
               <label className="text-[11px] font-mono uppercase tracking-wider mb-2 block" style={{ color: 'var(--text3)' }}>
                 Select Tone
               </label>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {TONES.map((t) => (
                   <button
                     key={t.id}
@@ -311,7 +311,7 @@ export function AICaptionStudio({ onGenerate, onRewrite }: AICaptionStudioProps)
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="grid grid-cols-2 gap-2"
+                className="grid grid-cols-1 sm:grid-cols-2 gap-2"
               >
                 {Object.entries(variants).map(([platform, caption]) => (
                   <button
@@ -357,7 +357,7 @@ export function AICaptionStudio({ onGenerate, onRewrite }: AICaptionStudioProps)
         {activeTab === 'analysis' && analysis && (
           <div className="space-y-4">
             {/* Scores */}
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="p-3 rounded-lg border" style={{ background: 'var(--bg2)', borderColor: 'var(--border)' }}>
                 <div className="flex items-center gap-2 mb-2">
                   <TrendingUp size={14} style={{ color: 'var(--accent)' }} />

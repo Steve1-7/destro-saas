@@ -135,7 +135,7 @@ function LoginForm() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4" style={{ background: 'var(--bg)' }}>
+    <div className="min-h-screen min-h-[100dvh] flex items-center justify-center p-4" style={{ background: 'var(--bg)' }}>
       {/* Neural grid bg */}
       <div className="fixed inset-0 pointer-events-none"
         style={{
@@ -152,7 +152,7 @@ function LoginForm() {
           </p>
         </div>
 
-        <div className="rounded-2xl border p-6" style={{ background: 'var(--bg1)', borderColor: 'var(--border)' }}>
+        <div className="rounded-2xl border p-4 sm:p-6" style={{ background: 'var(--bg1)', borderColor: 'var(--border)' }}>
           {sent ? (
             <div className="text-center py-4">
               <div className="text-4xl mb-3">📬</div>
@@ -171,7 +171,7 @@ function LoginForm() {
               <div className="flex p-1 rounded-lg mb-4" style={{ background: 'var(--bg2)' }}>
                 <button
                   onClick={() => setActiveTab('magic')}
-                  className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 text-xs font-medium rounded-md transition-all ${
+                  className={`flex-1 flex items-center justify-center gap-1 px-1 sm:px-2 py-1.5 text-[11px] sm:text-xs font-medium rounded-md transition-all ${
                     activeTab === 'magic' ? 'bg-[var(--bg3)] text-[var(--text)]' : 'text-[var(--text3)]'
                   }`}
                 >
@@ -180,7 +180,7 @@ function LoginForm() {
                 </button>
                 <button
                   onClick={() => setActiveTab('password')}
-                  className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 text-xs font-medium rounded-md transition-all ${
+                  className={`flex-1 flex items-center justify-center gap-1 px-1 sm:px-2 py-1.5 text-[11px] sm:text-xs font-medium rounded-md transition-all ${
                     activeTab === 'password' ? 'bg-[var(--bg3)] text-[var(--text)]' : 'text-[var(--text3)]'
                   }`}
                 >
@@ -189,7 +189,7 @@ function LoginForm() {
                 </button>
                 <button
                   onClick={() => setActiveTab('oauth')}
-                  className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 text-xs font-medium rounded-md transition-all ${
+                  className={`flex-1 flex items-center justify-center gap-1 px-1 sm:px-2 py-1.5 text-[11px] sm:text-xs font-medium rounded-md transition-all ${
                     activeTab === 'oauth' ? 'bg-[var(--bg3)] text-[var(--text)]' : 'text-[var(--text3)]'
                   }`}
                 >

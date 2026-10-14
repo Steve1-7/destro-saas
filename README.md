@@ -80,6 +80,10 @@ npm run dev
 # Open http://localhost:3000
 ```
 
+### Install on phones and computers
+
+Deploy the app over HTTPS to enable installation. On supported browsers, choose **Install SYNTRA** in the app or use the browser's **Install app** option. On iPhone or iPad, open SYNTRA in Safari, tap **Share**, then choose **Add to Home Screen**.
+
 ---
 
 ## Platform OAuth Setup

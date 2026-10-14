@@ -78,8 +78,8 @@ export function ContentCalendar({ events = [], onEventClick, onDateClick }: Cont
   return (
     <div className="rounded-xl border overflow-hidden" style={{ background: 'var(--bg1)', borderColor: 'var(--border)' }}>
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: 'var(--border)' }}>
-        <div className="flex items-center gap-3">
+      <div className="flex flex-col gap-3 px-3 py-3 border-b sm:flex-row sm:items-center sm:justify-between sm:px-4" style={{ borderColor: 'var(--border)' }}>
+        <div className="flex items-center gap-2 sm:gap-3">
           <div className="flex items-center gap-1">
             <button
               onClick={handlePrevMonth}
@@ -108,7 +108,7 @@ export function ContentCalendar({ events = [], onEventClick, onDateClick }: Cont
           </h2>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between gap-2 sm:justify-start">
           <div className="flex items-center gap-1 p-1 rounded-lg" style={{ background: 'var(--bg2)' }}>
             {(['month', 'week'] as const).map((mode) => (
               <button
@@ -138,13 +138,13 @@ export function ContentCalendar({ events = [], onEventClick, onDateClick }: Cont
       </div>
 
       {/* Calendar Grid */}
-      <div className="p-4">
+      <div className="p-2 sm:p-4">
         {/* Week day headers */}
         <div className="grid grid-cols-7 gap-1 mb-2">
           {weekDays.map((day) => (
             <div
               key={day}
-              className="text-center text-[11px] font-mono uppercase tracking-wider py-2"
+              className="text-center text-[9px] sm:text-[11px] font-mono uppercase tracking-wider py-2"
               style={{ color: 'var(--text3)' }}
             >
               {day}
@@ -170,7 +170,7 @@ export function ContentCalendar({ events = [], onEventClick, onDateClick }: Cont
                   setSelectedDate(day);
                   onDateClick?.(day);
                 }}
-                className="relative min-h-[100px] p-2 rounded-lg border text-left transition-all hover:border-[var(--border2)]"
+                className="relative min-h-[64px] p-1 text-[11px] sm:min-h-[100px] sm:p-2 sm:text-sm rounded-lg border text-left transition-all hover:border-[var(--border2)]"
                 style={{
                   background: isSelected
                     ? 'rgba(110,231,183,0.08)'

@@ -95,12 +95,12 @@ export function AnalyticsDashboard({ className }: AnalyticsDashboardProps) {
   return (
     <div className={`space-y-4 ${className}`}>
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
           <BarChart2Icon className="w-5 h-5" style={{ color: 'var(--accent)' }} />
           <h2 className="font-display font-semibold text-lg">Analytics Dashboard</h2>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {/* Period selector */}
           <div className="flex items-center gap-1 p-1 rounded-lg" style={{ background: 'var(--bg2)' }}>
             {(['7d', '30d', '90d', '1y'] as const).map((p) => (
@@ -128,7 +128,7 @@ export function AnalyticsDashboard({ className }: AnalyticsDashboardProps) {
       </div>
 
       {/* Metrics Grid */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         {METRICS.map((metric, index) => (
           <motion.button
             key={metric.id}
@@ -168,7 +168,7 @@ export function AnalyticsDashboard({ className }: AnalyticsDashboardProps) {
       </div>
 
       {/* Charts Row */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
         {/* Main Chart */}
         <div className="rounded-xl border p-4" style={{ background: 'var(--bg1)', borderColor: 'var(--border)' }}>
           <div className="flex items-center justify-between mb-4">

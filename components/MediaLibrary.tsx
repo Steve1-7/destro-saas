@@ -102,12 +102,12 @@ export function MediaLibrary({ className, onSelect, selectable = false }: MediaL
   return (
     <div className={`space-y-4 ${className}`}>
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-4">
           <h3 className="font-display font-semibold text-lg" style={{ color: 'var(--text)' }}>
             Media Library
           </h3>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 self-end sm:self-auto">
             <span className="text-[11px] px-2 py-1 rounded-full" style={{ background: 'var(--bg2)', color: 'var(--text3)' }}>
               {filteredMedia.length} items
             </span>
@@ -136,9 +136,9 @@ export function MediaLibrary({ className, onSelect, selectable = false }: MediaL
         </div>
       </div>
 
-      <div className="flex gap-4">
+      <div className="flex flex-col gap-4 sm:flex-row">
         {/* Folders Sidebar */}
-        <div className="w-48 flex-shrink-0 space-y-2">
+        <div className="flex flex-wrap gap-1 sm:w-48 sm:flex-shrink-0 sm:flex-col sm:space-y-2">
           <button
             onClick={() => selectFolder(null)}
             className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left transition-all ${
@@ -228,7 +228,7 @@ export function MediaLibrary({ className, onSelect, selectable = false }: MediaL
 
           {/* Media Grid/List */}
           {viewMode === 'grid' ? (
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3">
               {filteredMedia.map((item) => (
                 <motion.div
                   key={item.id}

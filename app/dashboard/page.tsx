@@ -264,7 +264,7 @@ export default function DashboardPage() {
   }, []);
 
   return (
-    <div className="flex h-screen overflow-hidden" style={{ background: 'var(--bg)' }}>
+    <div className="flex h-screen h-[100dvh] overflow-hidden" style={{ background: 'var(--bg)' }}>
       {/* Global Components */}
       <CommandPalette />
       
@@ -290,7 +290,7 @@ export default function DashboardPage() {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Enhanced Topbar */}
-        <header className="flex items-center justify-between px-5 h-[52px] border-b flex-shrink-0"
+        <header className="flex items-center justify-between px-3 sm:px-5 h-[52px] border-b flex-shrink-0"
           style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
           <div className="flex items-center gap-3">
             <button
@@ -303,8 +303,8 @@ export default function DashboardPage() {
               <Menu size={20} />
             </button>
             <NextImage src="/logo.webp" alt="" width={26} height={26} className="object-contain" />
-            <span className="font-display font-bold text-[15px] tracking-tight">SYNTRA</span>
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded border"
+            <span className="font-display font-bold text-sm sm:text-[15px] tracking-tight">SYNTRA</span>
+            <span className="hidden sm:inline text-[10px] font-mono px-2 py-0.5 rounded border"
               style={{ color: 'var(--accent)', background: 'rgba(110,231,183,0.1)', borderColor: 'rgba(110,231,183,0.2)' }}>
               v3.0 Pro
             </span>
@@ -339,11 +339,11 @@ export default function DashboardPage() {
         {/* Dynamic Content Based on Active Section */}
         <div className="flex-1 overflow-hidden flex">
           {/* Main Scrollable Content */}
-          <main className="flex-1 overflow-y-auto p-5">
+          <main className="min-w-0 flex-1 overflow-y-auto p-3 sm:p-5">
           {showComposer ? (
           <>
           {/* Row 1: Upload + Caption */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
             {/* Upload */}
             <div className="rounded-xl border overflow-hidden" style={{ background: 'var(--bg1)', borderColor: 'var(--border)' }}>
               <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: 'var(--border)' }}>
@@ -460,7 +460,7 @@ export default function DashboardPage() {
                 {generatingAI ? 'Generating variations...' : Object.keys(variants).length ? 'Regenerate Variations' : 'Generate Platform Variations'}
               </button>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {([
                   ['linkedin', 'LinkedIn · Professional', 'text-blue-400 bg-blue-400/10'],
                   ['tiktok', 'TikTok · Hook-first', 'text-pink-400 bg-pink-400/10'],
@@ -498,7 +498,7 @@ export default function DashboardPage() {
               <span className="font-display font-semibold text-[13px]">Multi-Platform Preview</span>
               <span className="text-[11px] font-mono" style={{ color: 'var(--text3)' }}>Real-time platform UI</span>
             </div>
-            <div className="p-4 grid grid-cols-3 gap-4">
+            <div className="p-4 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
               {/* TikTok Preview */}
               <div className="flex flex-col gap-2">
                 <div className="flex items-center justify-between">

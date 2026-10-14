@@ -46,7 +46,7 @@ export default function PostDetailPage({ params }: { params: { id: string } }) {
   };
 
   return (
-    <div className="min-h-screen p-6" style={{ background: 'var(--bg)' }}>
+    <div className="min-h-screen p-4 sm:p-6" style={{ background: 'var(--bg)' }}>
       <div className="max-w-3xl mx-auto flex flex-col gap-6">
         <a href="/dashboard/posts" className="flex items-center gap-2 text-sm w-fit transition-all"
           style={{ color: 'var(--text3)' }}>
@@ -54,7 +54,7 @@ export default function PostDetailPage({ params }: { params: { id: string } }) {
         </a>
 
         <div className="rounded-xl border p-5 flex flex-col gap-3" style={{ background: 'var(--bg1)', borderColor: 'var(--border)' }}>
-          <div className="flex items-start justify-between">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <h1 className="font-display font-bold text-lg">Post #{params.id}</h1>
               <p className="text-sm mt-1" style={{ color: 'var(--text3)' }}>Distribution tracking & analytics</p>
@@ -74,8 +74,8 @@ export default function PostDetailPage({ params }: { params: { id: string } }) {
           {distributions.map(d => (
             <div key={d.platform} className="rounded-xl border p-4 flex flex-col gap-3"
               style={{ background: 'var(--bg1)', borderColor: 'var(--border)' }}>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <div className="w-6 h-6 rounded flex items-center justify-center text-[10px] font-bold"
                     style={{ background: `${PLATFORM_COLORS[d.platform]}22`, color: PLATFORM_COLORS[d.platform] }}>
                     {d.platform === 'youtube' ? 'YT' : d.platform === 'tiktok' ? 'TT' : d.platform === 'linkedin' ? 'LI' : d.platform === 'facebook' ? 'FB' : d.platform === 'instagram' ? 'IG' : 'TW'}

@@ -45,9 +45,9 @@ export default function PostsPage() {
   }
 
   return (
-    <div className="min-h-screen p-6" style={{ background: 'var(--bg)' }}>
+    <div className="min-h-screen p-4 sm:p-6" style={{ background: 'var(--bg)' }}>
       <div className="max-w-4xl mx-auto flex flex-col gap-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="font-display font-bold text-xl">Posts</h1>
             <p className="text-sm mt-1" style={{ color: 'var(--text3)' }}>All your distributed content</p>
@@ -62,7 +62,7 @@ export default function PostsPage() {
           {posts.map(post => {
             const s = STATUS_STYLES[post.status] ?? STATUS_STYLES.draft;
             return (
-              <div key={post.id} className="rounded-xl border p-4 flex items-center justify-between gap-4"
+              <div key={post.id} className="rounded-xl border p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4"
                 style={{ background: 'var(--bg1)', borderColor: 'var(--border)' }}>
                 <div className="flex items-start gap-3 flex-1 min-w-0">
                   <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 text-base"
@@ -86,7 +86,7 @@ export default function PostsPage() {
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 flex-shrink-0">
+                <div className="flex items-center justify-between sm:justify-start gap-3 flex-shrink-0">
                   <span className="flex items-center gap-1.5 text-[11px] font-mono px-2 py-1 rounded"
                     style={{ color: s.color, background: s.bg }}>
                     {s.icon} {post.status.charAt(0).toUpperCase() + post.status.slice(1)}

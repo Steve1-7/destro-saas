@@ -109,7 +109,7 @@ export function AutomationBuilder({ className }: AutomationBuilderProps) {
   return (
     <div className={`space-y-4 ${className}`}>
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h3 className="font-display font-semibold text-lg" style={{ color: 'var(--text)' }}>
             Automation Workflows
@@ -173,7 +173,7 @@ export function AutomationBuilder({ className }: AutomationBuilderProps) {
                 <label className="text-[11px] font-mono uppercase tracking-wider mb-2 block" style={{ color: 'var(--text3)' }}>
                   When This Happens (Trigger)
                 </label>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {TRIGGER_OPTIONS.map((trigger) => (
                     <button
                       key={trigger.id}

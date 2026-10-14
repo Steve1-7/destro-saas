@@ -1,10 +1,31 @@
 // app/layout.tsx
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
+import PWAInstallButton from '@/components/PWAInstallButton';
 import './globals.css';
 
 export const metadata: Metadata = {
   title: 'SYNTRA — Content Distribution Dashboard',
   description: 'Distribute content across YouTube, TikTok, LinkedIn and Facebook with AI-powered caption adaptation.',
+  manifest: '/manifest.webmanifest',
+  applicationName: 'SYNTRA',
+  appleWebApp: {
+    capable: true,
+    title: 'SYNTRA',
+    statusBarStyle: 'black-translucent',
+  },
+  icons: {
+    icon: [
+      { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icon-512.png', sizes: '512x512', type: 'image/png' },
+    ],
+    apple: [{ url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
+  },
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  themeColor: '#080b12',
 };
 
 export default function RootLayout({
@@ -20,7 +41,10 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="bg-bg text-text antialiased">{children}</body>
+      <body className="bg-bg text-text antialiased">
+        {children}
+        <PWAInstallButton />
+      </body>
     </html>
   );
 }
