@@ -6,6 +6,8 @@ import { publishToYouTube } from '@/lib/platforms/youtube';
 import { publishToTikTok } from '@/lib/platforms/tiktok';
 import { publishToLinkedIn } from '@/lib/platforms/linkedin';
 import { publishToFacebook } from '@/lib/platforms/facebook';
+import { publishPayloadSchema } from '@/lib/validation';
+import { createAdminClient } from '@/lib/supabase';
 import type { Platform, PublishPayload, PublishResult } from '@/types';
 
 const MAX_RETRIES = 3;
@@ -45,19 +47,46 @@ export async function POST(
   }
 
   const supabase = createRouteHandlerClient({ cookies });
-  const payload: PublishPayload = await req.json();
+  const payloadResult = publishPayloadSchema.safeParse(await req.json());
+
+  if (!payloadResult.success) {
+    return NextResponse.json(
+      { error: payloadResult.error.issues.map((issue) => issue.message).join(', ') },
+      { status: 400 }
+    );
+  }
+
+  const payload = payloadResult.data as PublishPayload;
 
   // Verify user session
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  const { data: post, error: postError } = await supabase
+    .from('posts')
+    .select('id')
+    .eq('id', payload.postId)
+    .eq('user_id', user.id)
+    .maybeSingle();
+
+  if (postError) {
+    console.error(`[publish/${platform}] Failed to verify post ownership`, postError);
+    return NextResponse.json({ error: 'Could not verify the post.' }, { status: 500 });
+  }
+
+  if (!post) {
+    return NextResponse.json({ error: 'Post not found.' }, { status: 404 });
+  }
+
+  const admin = createAdminClient();
+
   // Fetch integration token
-  const { data: integration } = await supabase
+  const { data: integration } = await admin
     .from('integrations')
     .select('access_token, platform_user_id, settings')
-    .eq('user_id', session.user.id)
+    .eq('user_id', user.id)
     .eq('platform', platform)
     .eq('is_active', true)
     .single();
@@ -70,7 +99,7 @@ export async function POST(
   }
 
   // Update status → queued
-  await supabase.from('distributions').upsert(
+  await admin.from('distributions').upsert(
     {
       post_id: payload.postId,
       platform,
@@ -88,7 +117,7 @@ export async function POST(
   while (attempt < MAX_RETRIES) {
     try {
       // Update status → processing
-      await supabase
+      await admin
         .from('distributions')
         .update({ status: 'processing', progress: 20 + attempt * 15 })
         .eq('post_id', payload.postId)
@@ -102,7 +131,7 @@ export async function POST(
       );
 
       // Update → published
-      await supabase
+      await admin
         .from('distributions')
         .update({
           status: 'published',
@@ -116,10 +145,10 @@ export async function POST(
         .eq('platform', platform);
 
       // Update integration last_used_at
-      await supabase
+      await admin
         .from('integrations')
         .update({ last_used_at: new Date().toISOString() })
-        .eq('user_id', session.user.id)
+        .eq('user_id', user.id)
         .eq('platform', platform);
 
       return NextResponse.json({ success: true, result });
@@ -136,7 +165,7 @@ export async function POST(
   }
 
   // All retries exhausted → mark failed
-  await supabase
+  await admin
     .from('distributions')
     .update({
       status: 'failed',

@@ -2,6 +2,7 @@
 
 // app/(auth)/login/page.tsx
 import { useState, useEffect, Suspense } from 'react';
+import Image from 'next/image';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Loader2, Mail, Github, Chrome, Eye, EyeOff, Lock, User } from 'lucide-react';
@@ -144,14 +145,8 @@ function LoginForm() {
 
       <div className="w-full max-w-sm relative z-10">
         <div className="text-center mb-8">
-          <div className="w-12 h-12 rounded-2xl mx-auto mb-4 flex items-center justify-center"
-            style={{ background: 'linear-gradient(135deg, var(--accent), var(--accent2))' }}>
-            <svg width="22" height="22" fill="none" viewBox="0 0 24 24">
-              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
-                stroke="#040d0a" strokeWidth="2" strokeLinecap="round" />
-            </svg>
-          </div>
-          <h1 className="font-display font-bold text-2xl">Distro</h1>
+          <Image src="/logo.webp" alt="" width={48} height={48} className="object-contain mx-auto mb-4" />
+          <h1 className="font-display font-bold text-2xl">SYNTRA</h1>
           <p className="text-sm mt-2" style={{ color: 'var(--text3)' }}>
             Content distribution for developers
           </p>

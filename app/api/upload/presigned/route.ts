@@ -3,19 +3,40 @@ import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { createAdminClient } from '@/lib/supabase';
+import { uploadRequestSchema } from '@/lib/validation';
 
 export async function POST(req: NextRequest) {
   const supabase = createRouteHandlerClient({ cookies });
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { user } } = await supabase.auth.getUser();
 
-  if (!session) {
+  if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const { fileName, fileType } = await req.json();
+  const parsedBody = uploadRequestSchema.safeParse(await req.json());
+  if (!parsedBody.success) {
+    return NextResponse.json(
+      { error: parsedBody.error.issues.map((issue) => issue.message).join(', ') },
+      { status: 400 }
+    );
+  }
 
-  const ext = fileName.split('.').pop();
-  const path = `${session.user.id}/${Date.now()}.${ext}`;
+  const { fileName, fileType } = parsedBody.data;
+  const extension = fileName.split('.').pop()?.toLowerCase() ?? '';
+  const supportedExtensions: Record<string, string[]> = {
+    'image/jpeg': ['jpg', 'jpeg'],
+    'image/png': ['png'],
+    'image/webp': ['webp'],
+    'video/mp4': ['mp4'],
+    'video/webm': ['webm'],
+    'video/quicktime': ['mov'],
+  };
+
+  if (!supportedExtensions[fileType].includes(extension)) {
+    return NextResponse.json({ error: 'File extension does not match the media type.' }, { status: 400 });
+  }
+
+  const path = `${user.id}/${crypto.randomUUID()}.${extension}`;
 
   const admin = createAdminClient();
 

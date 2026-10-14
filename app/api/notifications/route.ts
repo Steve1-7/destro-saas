@@ -2,6 +2,11 @@
 import { NextResponse } from 'next/server';
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
+import {
+  notificationBodySchema,
+  notificationReadSchema,
+  getErrorMessage,
+} from '@/lib/validation';
 
 const MISSING_TABLE_CODES = new Set(['42P01', 'PGRST205']);
 
@@ -46,10 +51,7 @@ export async function GET() {
     return NextResponse.json({ notifications: data ?? [] });
   } catch (err) {
     console.error('[notifications] Unexpected GET error', err);
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: getErrorMessage(err) }, { status: 500 });
   }
 }
 
@@ -66,12 +68,20 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
+    const parsedBody = notificationBodySchema.safeParse(body);
+
+    if (!parsedBody.success) {
+      return NextResponse.json(
+        { error: parsedBody.error.issues.map((issue) => issue.message).join(', ') },
+        { status: 400 }
+      );
+    }
 
     const { data, error } = await supabase
       .from('notifications')
       .insert({
         user_id: user.id,
-        ...body,
+        ...parsedBody.data,
       })
       .select()
       .single();
@@ -88,10 +98,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ notification: data });
   } catch (err) {
     console.error('[notifications] Unexpected POST error', err);
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: getErrorMessage(err) }, { status: 500 });
   }
 }
 
@@ -107,7 +114,15 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { id, is_read } = await request.json();
+    const parsedBody = notificationReadSchema.safeParse(await request.json());
+    if (!parsedBody.success) {
+      return NextResponse.json(
+        { error: parsedBody.error.issues.map((issue) => issue.message).join(', ') },
+        { status: 400 }
+      );
+    }
+
+    const { id, is_read } = parsedBody.data;
 
     const { data, error } = await supabase
       .from('notifications')
@@ -128,9 +143,6 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ notification: data });
   } catch (err) {
     console.error('[notifications] Unexpected PATCH error', err);
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: getErrorMessage(err) }, { status: 500 });
   }
 }

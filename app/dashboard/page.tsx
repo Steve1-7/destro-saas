@@ -3,6 +3,7 @@
 // Enhanced Dashboard Page - AI-Powered Multi-Platform Content Distribution System
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import NextImage from 'next/image';
 import {
   Upload, Sparkles, Send, RefreshCw, Youtube,
   CheckCircle2, XCircle, Loader2, Clock, Hash,
@@ -301,14 +302,8 @@ export default function DashboardPage() {
             >
               <Menu size={20} />
             </button>
-            <div className="w-[26px] h-[26px] rounded-[6px] flex items-center justify-center"
-              style={{ background: 'linear-gradient(135deg, var(--accent), var(--accent2))' }}>
-              <svg width="14" height="14" fill="none" viewBox="0 0 24 24">
-                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
-                  stroke="#040d0a" strokeWidth="2" strokeLinecap="round" />
-              </svg>
-            </div>
-            <span className="font-display font-bold text-[15px] tracking-tight">Distro</span>
+            <NextImage src="/logo.webp" alt="" width={26} height={26} className="object-contain" />
+            <span className="font-display font-bold text-[15px] tracking-tight">SYNTRA</span>
             <span className="text-[10px] font-mono px-2 py-0.5 rounded border"
               style={{ color: 'var(--accent)', background: 'rgba(110,231,183,0.1)', borderColor: 'rgba(110,231,183,0.2)' }}>
               v3.0 Pro

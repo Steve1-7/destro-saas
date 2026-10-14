@@ -5,6 +5,32 @@ import type { Post, Integration, Distribution } from '@/types';
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
+export function getSupabaseClientConfig() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!url || !anonKey) {
+    return {
+      url: null,
+      anonKey: null,
+      hasPublicConfig: false,
+    };
+  }
+
+  return { url, anonKey, hasPublicConfig: true };
+}
+
+export function requireServerSupabaseEnv() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!url || !serviceKey) {
+    throw new Error('Missing Supabase server env: NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required');
+  }
+
+  return { url, serviceKey };
+}
+
 // Browser client (singleton). Guard creation so builds don't fail when env vars
 // are not provided (CI / static analysis). At runtime in production these
 // variables should be set and the client will be created.
@@ -13,11 +39,8 @@ export const supabase: any =
 
 // Server-side admin client (service role — never expose to client)
 export function createAdminClient() {
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!supabaseUrl || !serviceKey) {
-    throw new Error('SUPABASE_SERVICE_ROLE_KEY and NEXT_PUBLIC_SUPABASE_URL are required for admin client');
-  }
-  return createClient(supabaseUrl, serviceKey, {
+  const { url, serviceKey } = requireServerSupabaseEnv();
+  return createClient(url, serviceKey, {
     auth: { autoRefreshToken: false, persistSession: false },
   });
 }

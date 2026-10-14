@@ -1,4 +1,4 @@
-# Distro — Content Distribution Dashboard
+# SYNTRA — Content Distribution Dashboard
 
 A developer-first SaaS for distributing content across YouTube, TikTok, LinkedIn, and Facebook — with AI-powered caption adaptation, real-time status tracking, and a dark-mode neural UI.
 
@@ -59,7 +59,13 @@ Or run the SQL files manually in your Supabase SQL editor:
 supabase/migrations/001_posts.sql
 supabase/migrations/002_integrations.sql
 supabase/migrations/003_distributions.sql
+supabase/migrations/004_notifications.sql
+supabase/migrations/005_integrations_server_only.sql
 ```
+
+Apply all migrations before deploying. Migration `005_integrations_server_only.sql` removes direct browser-role access to OAuth integration records; integration management must use the authenticated server API.
+
+`scripts/reset-posts.sql` is a destructive development-only utility. It is not a migration and must never be run against production data.
 
 ### 4. Create Supabase Storage bucket
 

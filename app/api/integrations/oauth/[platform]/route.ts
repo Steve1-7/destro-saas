@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+import { createAdminClient } from '@/lib/supabase';
 import type { Platform } from '@/types';
 import { getAppOrigin, getOAuthRedirectUri } from '@/lib/app-url';
 import {
@@ -63,15 +64,15 @@ export async function GET(
 
   const supabase = createRouteHandlerClient({ cookies });
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user },
+  } = await supabase.auth.getUser();
 
   const code = req.nextUrl.searchParams.get('code');
   const state = req.nextUrl.searchParams.get('state');
 
   // ─── Step 1: Start OAuth (redirect to provider) ─────────────────
   if (!code) {
-    if (!session) {
+    if (!user) {
       console.warn(logPrefix, 'No session — redirecting to login');
       const loginUrl = new URL('/login', getAppOrigin());
       loginUrl.searchParams.set('next', `/api/integrations/oauth/${platform}`);
@@ -119,7 +120,7 @@ export async function GET(
     return redirectWithError(req, 'state_mismatch');
   }
 
-  if (!session) {
+  if (!user) {
     return redirectWithError(req, 'not_authenticated');
   }
 
@@ -198,9 +199,10 @@ export async function GET(
   }
 
   const expiresIn = tokenData.expires_in as number | undefined;
-  const { error: dbError } = await supabase.from('integrations').upsert(
+  const admin = createAdminClient();
+  const { error: dbError } = await admin.from('integrations').upsert(
     {
-      user_id: session.user.id,
+      user_id: user.id,
       platform,
       access_token: accessToken,
       refresh_token: (tokenData.refresh_token as string | undefined) ?? null,

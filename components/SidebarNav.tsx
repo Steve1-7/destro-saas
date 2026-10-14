@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import NextImage from 'next/image';
 import {
   LayoutDashboard,
   PenTool,
@@ -73,20 +74,8 @@ export function SidebarNav({ className, onNavigate }: SidebarNavProps) {
       <div className="flex items-center justify-between px-4 py-4 border-b" style={{ borderColor: 'var(--border)' }}>
         {!sidebarCollapsed && (
           <div className="flex items-center gap-2">
-            <div
-              className="w-7 h-7 rounded-md flex items-center justify-center"
-              style={{ background: 'linear-gradient(135deg, var(--accent), var(--accent2))' }}
-            >
-              <svg width="14" height="14" fill="none" viewBox="0 0 24 24">
-                <path
-                  d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
-                  stroke="#040d0a"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                />
-              </svg>
-            </div>
-            <span className="font-display font-bold text-sm">Distro</span>
+            <NextImage src="/logo.webp" alt="" width={28} height={28} className="object-contain" />
+            <span className="font-display font-bold text-sm">SYNTRA</span>
           </div>
         )}
         <button

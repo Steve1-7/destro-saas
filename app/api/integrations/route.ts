@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { integrationToConnectedAccount } from '@/lib/integrations-map';
+import { createAdminClient } from '@/lib/supabase';
 import type { Integration } from '@/types';
 
 export async function GET() {
@@ -21,7 +22,8 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { data, error } = await supabase
+    const admin = createAdminClient();
+    const { data, error } = await admin
       .from('integrations')
       .select('*')
       .eq('user_id', user.id)
@@ -32,8 +34,17 @@ export async function GET() {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    const accounts = (data as Integration[]).map(integrationToConnectedAccount);
-    return NextResponse.json({ integrations: data, accounts });
+    const integrations = data as Integration[];
+    const safeIntegrations = integrations.map(
+      ({ access_token: _accessToken, refresh_token: _refreshToken, ...integration }) => integration
+    );
+    const accounts = integrations.map((integration) => {
+      const { access_token: _accessToken, refresh_token: _refreshToken, ...account } =
+        integrationToConnectedAccount(integration);
+      return account;
+    });
+
+    return NextResponse.json({ integrations: safeIntegrations, accounts });
   } catch (err) {
     console.error('[integrations] Unexpected error', err);
     return NextResponse.json(

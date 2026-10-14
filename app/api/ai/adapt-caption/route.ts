@@ -3,26 +3,26 @@ import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { generateCaptionVariants } from '@/lib/ai';
+import { captionRequestSchema } from '@/lib/validation';
 
 export async function POST(req: NextRequest) {
   const supabase = createRouteHandlerClient({ cookies });
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { user } } = await supabase.auth.getUser();
 
-  if (!session) {
+  if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const { caption } = await req.json();
-
-  if (!caption || typeof caption !== 'string' || caption.trim().length < 10) {
+  const parsedBody = captionRequestSchema.safeParse(await req.json());
+  if (!parsedBody.success) {
     return NextResponse.json(
-      { error: 'Caption must be at least 10 characters' },
+      { error: parsedBody.error.issues.map((issue) => issue.message).join(', ') },
       { status: 400 }
     );
   }
 
   try {
-    const variants = await generateCaptionVariants(caption);
+    const variants = await generateCaptionVariants(parsedBody.data.caption);
     return NextResponse.json({ variants });
   } catch (err) {
     console.error('[ai/adapt-caption]', err);

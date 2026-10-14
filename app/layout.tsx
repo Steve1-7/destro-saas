@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Distro — Content Distribution Dashboard',
+  title: 'SYNTRA — Content Distribution Dashboard',
   description: 'Distribute content across YouTube, TikTok, LinkedIn and Facebook with AI-powered caption adaptation.',
 };
 

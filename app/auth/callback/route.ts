@@ -3,6 +3,7 @@ import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 import { getAppOrigin } from '@/lib/app-url';
+import { getSafePath } from '@/lib/validation';
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
@@ -12,8 +13,7 @@ export async function GET(req: NextRequest) {
   const next = searchParams.get('next');
 
   const origin = getAppOrigin();
-  const safeNext =
-    next && next.startsWith('/') && !next.startsWith('//') ? next : '/dashboard';
+  const safeNext = getSafePath(next);
 
   if (authError) {
     console.error('[auth/callback] Provider error', authError, authErrorDescription);
