@@ -1,8 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import NextImage from 'next/image';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import type { User as SupabaseUser } from '@supabase/supabase-js';
 import {
   LayoutDashboard,
   PenTool,
@@ -54,6 +56,45 @@ interface SidebarNavProps {
 
 export function SidebarNav({ className, onNavigate }: SidebarNavProps) {
   const { activeSection, sidebarCollapsed, setActiveSection, toggleSidebar } = useNavStore();
+  const supabase = createClientComponentClient();
+  const [userName, setUserName] = useState('Account');
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const updateUserName = (user: SupabaseUser | null) => {
+      if (!isMounted) return;
+
+      const metadataName =
+        user?.user_metadata?.full_name ??
+        user?.user_metadata?.name ??
+        user?.user_metadata?.display_name;
+      const emailName = user?.email?.split('@')[0];
+      const name =
+        (typeof metadataName === 'string' && metadataName.trim()) ||
+        emailName ||
+        'Account';
+
+      setUserName(name);
+    };
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      updateUserName(session?.user ?? null);
+    });
+
+    void supabase.auth.getUser().then(({ data, error }) => {
+      if (error) {
+        console.error('[sidebar] Failed to load signed-in user', error);
+        return;
+      }
+      updateUserName(data.user);
+    });
+
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
+  }, [supabase]);
 
   const handleNavClick = (sectionId: string) => {
     setActiveSection(sectionId);
@@ -182,12 +223,12 @@ export function SidebarNav({ className, onNavigate }: SidebarNavProps) {
             className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium"
             style={{ background: 'linear-gradient(135deg, var(--accent), var(--accent2))', color: '#040d0a' }}
           >
-            U
+            {userName.charAt(0).toUpperCase()}
           </div>
           {!sidebarCollapsed && (
-            <div className="flex-1 text-left">
+            <div className="min-w-0 flex-1 text-left">
               <p className="text-sm font-medium" style={{ color: 'var(--text)' }}>
-                User Name
+                <span className="block truncate" title={userName}>{userName}</span>
               </p>
               <p className="text-[11px]" style={{ color: 'var(--text3)' }}>
                 Pro Plan
